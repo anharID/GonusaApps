@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
             'user_code' => 'U001',
             'user_fullname' => 'Administrator',
             'department' => 'IT',
-            'user_password' => Hash::make('password123'), // Password: password123
+            'user_password' => Hash::make('password123'),
             'data_status' => true,
         ]);
 
@@ -26,7 +26,15 @@ class UserSeeder extends Seeder
             'user_code' => 'U002',
             'user_fullname' => 'Jane Smith',
             'department' => 'HR',
-            'user_password' => Hash::make('password123'), // Password: password456
+            'user_password' => Hash::make('password123'),
+            'data_status' => true,
+        ]);
+
+        User::create([
+            'user_code' => 'U003',
+            'user_fullname' => 'Anhar',
+            'department' => 'IT',
+            'user_password' => Hash::make('anhar123'),
             'data_status' => true,
         ]);
     }
