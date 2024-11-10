@@ -29,9 +29,11 @@ class AppsController extends Controller
                 ';
             })
             ->addColumn('status', function ($app) {
-                return $app->data_status ? 'Aktif' : 'Tidak Aktif';
+                return $app->data_status
+                    ? '<span class="badge badge-success">Aktif</span>'
+                    : '<span class="badge badge-danger">Tidak Aktif</span>';
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['action', 'status'])
             ->make(true);
     }
 

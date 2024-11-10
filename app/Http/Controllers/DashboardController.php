@@ -13,13 +13,16 @@ class DashboardController extends Controller
         $title = 'Dashboard Aplikasi';
         // Jika administrator, tampilkan semua apps
         if (auth()->user()->id === 1) {
-            $apps = App::where('data_status', 1)->get();
+            $apps = App::where('data_status', 1)
+                ->get()
+                ->groupBy('app_group');
         } else {
             // Jika user biasa, tampilkan apps sesuai hak akses
             $apps = auth()->user()->apps()
                 ->where('apps.data_status', 1)
                 ->wherePivot('data_status', 1)
-                ->get();
+                ->get()
+                ->groupBy('app_group');
         }
 
         return view('dashboard.index', compact('title', 'apps'));

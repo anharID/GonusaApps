@@ -6,7 +6,8 @@
         <i class="fa fa-bars"></i>
     </button>
 
-    <!-- Topbar Search -->
+    <!-- Topbar Search - Only show in dashboard -->
+    @if(Request::is('dashboard'))
     <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search"
         onsubmit="return false;">
         <div class="input-group">
@@ -20,11 +21,12 @@
             </div>
         </div>
     </form>
+    @endif
 
     <!-- Topbar Navbar -->
     <ul class="navbar-nav ml-auto">
-
         <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+        @if(Request::is('dashboard'))
         <li class="nav-item dropdown no-arrow d-sm-none">
             <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
@@ -47,6 +49,8 @@
                 </form>
             </div>
         </li>
+        @endif
+
 
         <!-- Nav Item - Alerts -->
         {{-- <li class="nav-item dropdown no-arrow mx-1">

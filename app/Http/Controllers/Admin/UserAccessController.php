@@ -53,7 +53,6 @@ class UserAccessController extends Controller
             'app_ids' => 'nullable|array'
         ]);
 
-        // Nonaktifkan semua akses lama
         MapUserApp::where('user_id', $request->user_id)
             ->update(['data_status' => 0]);
 
