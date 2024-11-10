@@ -2,8 +2,6 @@
 
 @push('styles')
 
-<link rel="stylesheet" href="{{ asset('vendor/toastr/toastr.min.css') }}">
-
 <style>
     .app-card {
         transition: transform 0.2s;
@@ -55,27 +53,7 @@
 
 @push('scripts')
 
-<script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
-
 <script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-
     function search(keyword) {
         keyword = keyword.toLowerCase();
         const cards = document.querySelectorAll('.app-card-wrapper');
@@ -100,11 +78,5 @@
     document.getElementById('searchInputMobile').addEventListener('input', function(e) {
         document.getElementById('searchInput').value = e.target.value;
     });
-
-    @if (session('success'))
-        toastr.success("{{ session('success') }}");
-    @elseif (session('error'))
-        toastr.error("{{ session('error') }}");
-    @endif
 </script>
 @endpush

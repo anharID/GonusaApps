@@ -25,12 +25,16 @@ class AppServiceProvider extends ServiceProvider
             if (auth()->check()) {
                 if (auth()->user()->id === 1) {
                     $sidebarApps = App::where('data_status', 1)
+                        ->orderBy('app_group')
+                        ->orderBy('app_name')
                         ->get()
                         ->groupBy('app_group');
                 } else {
                     $sidebarApps = auth()->user()->apps()
                         ->where('apps.data_status', 1)
                         ->wherePivot('data_status', 1)
+                        ->orderBy('app_group')
+                        ->orderBy('app_name')
                         ->get()
                         ->groupBy('app_group');
                 }

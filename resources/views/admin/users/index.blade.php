@@ -40,11 +40,12 @@
                         <label>Departemen</label>
                         <select class="form-control" id="department" name="department" required>
                             <option value="">Pilih Departemen</option>
+                            <option value="Accounting">Accounting</option>
+                            <option value="Finance">Finance</option>
+                            <option value="HR">HR</option>
                             <option value="IT">IT</option>
                             <option value="Operation">Operation</option>
-                            <option value="Finance">Finance</option>
-                            <option value="Accounting">Accounting</option>
-                            <option value="HR">HR</option>
+                            <option value="Sales">Sales</option>
                         </select>
                     </div>
                 </div>
@@ -96,6 +97,26 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Apakah Anda yakin ingin menghapus user ini?</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                <button class="btn btn-danger" type="button" id="confirmDelete">Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -103,7 +124,9 @@
 <script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 <script>
     let table;
+    let deleteId = null;
 
+    // Load data user
     $(document).ready(function() {
         table = $('#usersTable').DataTable({
             processing: true,
@@ -114,7 +137,7 @@
                 {data: 'user_fullname', name: 'user_fullname'},
                 {data: 'department', name: 'department'},
                 {data: 'status', name: 'status'},
-                {data: 'action', name: 'action', orderable: false, searchable: false}
+                {data: 'action', name: 'action'}
             ]
         });
 
@@ -122,26 +145,31 @@
         $('#userForm').on('submit', function(e) {
             e.preventDefault();
             const id = $('#userId').val();
-            const url = id ? `/users/${id}` : '/users';
+            let url = id ? `{{ route('users.update', ':id') }}` : `{{ route('users.store') }}`;
             const method = id ? 'PUT' : 'POST';
+
+            if (id) {
+                url = url.replace(':id', id);
+            }
 
             $.ajax({
                 url: url,
                 method: method,
                 data: $(this).serialize(),
                 success: function(response) {
-                    alert(response.message);
+                    toastr.success(response.message);
                     table.ajax.reload();
                     toggleForm(false);
                     resetForm();
                 },
                 error: function(xhr) {
-                    alert('Terjadi kesalahan: ' + xhr.responseJSON.message);
+                    toastr.error('Terjadi kesalahan: ' + xhr.responseJSON.message);
                 }
             });
         });
     });
 
+    // Toggle form add / edit
     function toggleForm(show) {
         if (show) {
             $('#formCard').slideDown();
@@ -154,6 +182,7 @@
         }
     }
 
+    // Reset form ketika form ditutup
     function resetForm() {
         $('#userForm')[0].reset();
         $('#userId').val('');
@@ -161,38 +190,69 @@
         $('input[name="_method"]').val('POST');
     }
 
+    // Mengisi form dengan data user untuk di edit
     function editUser(id) {
-        let row = table.row($(`button[data-id="${id}"]`).closest('tr')).data();
+        let url = `{{ route('users.edit', ':id') }}`;
+        url = url.replace(':id', id);
 
-        $('#userId').val(id);
-        $('#user_code').val(row.user_code);
-        $('#user_fullname').val(row.user_fullname);
-        $('#department').val(row.department);
-        $('#user_password').val('');
-
-        $('#formTitle').text('Edit User');
-        $('input[name="_method"]').val('PUT');
-
-        toggleForm(true);
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function(data) {
+                $('#userId').val(data.id);
+                $('#user_code').val(data.user_code);
+                $('#user_fullname').val(data.user_fullname);
+                $('#department').val(data.department);
+                $('#user_password').val('');
+                $('#data_status').prop('checked', data.data_status == 1);
+                $('#formTitle').text('Edit User');
+                $('input[name="_method"]').val('PUT');
+                toggleForm(true);
+            },
+            error: function(xhr) {
+                alert('Terjadi kesalahan: ' + xhr.responseJSON.message);
+            }
+        });
     }
 
+    // Konfirmasi hapus user
     function deleteUser(id) {
-        if (confirm('Apakah Anda yakin ingin menghapus user ini?')) {
+        deleteId = id;
+        $('#deleteModal').modal('show');
+    }
+
+    // Hapus data
+    $('#confirmDelete').click(function() {
+        if (deleteId) {
+            let url = `{{ route('users.destroy', ':id') }}`;
+            url = url.replace(':id', deleteId);
+
             $.ajax({
-                url: `/users/${id}`,
+                url: url,
                 type: 'DELETE',
                 data: {
                     "_token": "{{ csrf_token() }}"
                 },
                 success: function(response) {
-                    alert(response.message);
-                    table.ajax.reload();
+                    if (response.success) {
+                        toastr.success(response.message);
+                        table.ajax.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                    $('#deleteModal').modal('hide');
                 },
                 error: function(xhr) {
-                    alert('Terjadi kesalahan: ' + xhr.responseJSON.message);
+                    toastr.error('Terjadi kesalahan: ' + xhr.responseJSON.message);
+                    $('#deleteModal').modal('hide');
                 }
             });
         }
-    }
+    });
+
+    // Reset deleteId ketika modal ditutup
+    $('#deleteModal').on('hidden.bs.modal', function () {
+        deleteId = null;
+    });
 </script>
 @endpush

@@ -14,6 +14,8 @@ class DashboardController extends Controller
         // Jika administrator, tampilkan semua apps
         if (auth()->user()->id === 1) {
             $apps = App::where('data_status', 1)
+                ->orderBy('app_group')
+                ->orderBy('app_name')
                 ->get()
                 ->groupBy('app_group');
         } else {
@@ -21,6 +23,8 @@ class DashboardController extends Controller
             $apps = auth()->user()->apps()
                 ->where('apps.data_status', 1)
                 ->wherePivot('data_status', 1)
+                ->orderBy('app_group')
+                ->orderBy('app_name')
                 ->get()
                 ->groupBy('app_group');
         }

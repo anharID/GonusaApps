@@ -12,12 +12,13 @@ class UserController extends Controller
 {
     public function index()
     {
-        return view('admin.users.index');
+        $title = "Manajemen User";
+        return view('admin.users.index', compact('title'));
     }
 
     public function getData()
     {
-        $users = User::select(['id', 'user_code', 'user_fullname', 'department', 'data_status']);
+        $users = User::select(['id', 'user_code', 'user_fullname', 'department', 'data_status'])->where('id', '!=', 1);
 
         return DataTables::of($users)
             ->addColumn('status', function ($user) {
@@ -56,7 +57,13 @@ class UserController extends Controller
             'data_status' => $request->has('data_status'),
         ]);
 
-        return response()->json(['success' => true, 'message' => 'User berhasil ditambahkan']);
+        return $this->returnJson(true, 'User berhasil ditambahkan');
+    }
+
+    public function edit($id)
+    {
+        $app = User::findOrFail($id);
+        return response()->json($app);
     }
 
     public function update(Request $request, $id)
@@ -80,12 +87,12 @@ class UserController extends Controller
 
         User::find($id)->update($data);
 
-        return response()->json(['success' => true, 'message' => 'User berhasil diperbarui']);
+        return $this->returnJson(true, 'User berhasil diperbarui');
     }
 
     public function destroy($id)
     {
-        User::find($id)->update(['data_status' => false]);
-        return response()->json(['success' => true, 'message' => 'User berhasil dihapus']);
+        User::find($id)->delete();
+        return $this->returnJson(true, 'User berhasil dihapus');
     }
 }

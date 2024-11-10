@@ -11,7 +11,8 @@ class AppsController extends Controller
 {
     public function index()
     {
-        return view('admin.apps.index');
+        $title = 'Manajemen Apikasi';
+        return view('admin.apps.index', compact('title'));
     }
 
     public function getData()
@@ -51,7 +52,8 @@ class AppsController extends Controller
 
         App::create($data);
 
-        return response()->json(['message' => 'Aplikasi berhasil ditambahkan']);
+        return $this->returnJson(true, 'Aplikasi berhasil ditambahkan');
+        // return response()->json(['message' => 'Aplikasi berhasil ditambahkan']);
     }
 
     public function edit($id)
@@ -75,7 +77,8 @@ class AppsController extends Controller
 
         $app->update($data);
 
-        return response()->json(['message' => 'Aplikasi berhasil diperbarui']);
+        // return response()->json(['message' => 'Aplikasi berhasil diperbarui']);
+        return $this->returnJson(true, 'Aplikasi berhasil diperbarui');
     }
 
     public function destroy($id)
@@ -83,6 +86,7 @@ class AppsController extends Controller
         $app = App::findOrFail($id);
         $app->delete();
 
-        return response()->json(['message' => 'Aplikasi berhasil dihapus']);
+        return $this->returnJson(true, 'Aplikasi berhasil dihapus');
+        // return response()->json(['message' => 'Aplikasi berhasil dihapus']);
     }
 }

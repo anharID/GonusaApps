@@ -19,30 +19,42 @@
             <input type="hidden" name="_method" value="POST">
             <input type="hidden" name="id" id="app_id">
 
-            <div class="form-group">
-                <label>Kode Aplikasi</label>
-                <input type="text" name="app_code" id="app_code" class="form-control" required>
-            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Kode Aplikasi</label>
+                        <input type="text" name="app_code" id="app_code" class="form-control" required>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label>Nama Aplikasi</label>
-                <input type="text" name="app_name" id="app_name" class="form-control" required>
-            </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Nama Aplikasi</label>
+                        <input type="text" name="app_name" id="app_name" class="form-control" required>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label>Grup Aplikasi</label>
-                <select name="app_group" id="app_group" class="form-control" required>
-                    <option value="">Pilih Grup Aplikasi</option>
-                    <option value="HR">HR</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Operation">Operation</option>
-                    <option value="Sales">Sales</option>
-                </select>
-            </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Grup Aplikasi</label>
+                        <select name="app_group" id="app_group" class="form-control" required>
+                            <option value="">Pilih Grup Aplikasi</option>
+                            <option value="Accounting">Accounting</option>
+                            <option value="Finance">Finance</option>
+                            <option value="HR">HR</option>
+                            <option value="IT">IT</option>
+                            <option value="Operation">Operation</option>
+                            <option value="Sales">Sales</option>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label>URL Aplikasi</label>
-                <input type="text" name="app_url" id="app_url" class="form-control" required>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>URL Aplikasi</label>
+                        <input type="text" name="app_url" id="app_url" class="form-control" required>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -85,6 +97,26 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Apakah Anda yakin ingin menghapus aplikasi ini?</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                <button class="btn btn-danger" type="button" id="confirmDelete">Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -92,7 +124,9 @@
 <script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 <script>
     let table;
+    let deleteId = null;
 
+    // Get data aplikasi
     $(document).ready(function() {
         table = $('#appsTable').DataTable({
             processing: true,
@@ -104,11 +138,7 @@
                 { data: 'app_group', name: 'app_group' },
                 { data: 'app_url', name: 'app_url' },
                 { data: 'status', name: 'status' },
-                {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
+                { data: 'action',  name: 'action',
                 }
             ]
         });
@@ -117,7 +147,9 @@
         $('#appForm').on('submit', function(e) {
             e.preventDefault();
             const id = $('#app_id').val();
-            const url = id ? `/apps/${id}` : '/apps';
+            const updateUrl = '{{ route("apps.update", ":id") }}';
+            const storeUrl = '{{ route("apps.store") }}';
+            const url = id ? updateUrl.replace(':id', id) : storeUrl;
             const method = id ? 'PUT' : 'POST';
 
             $.ajax({
@@ -125,18 +157,19 @@
                 method: method,
                 data: $(this).serialize(),
                 success: function(response) {
-                    alert('Data berhasil disimpan');
+                    toastr.success(response.message);
                     table.ajax.reload();
                     toggleForm(false);
                     resetForm();
                 },
                 error: function(xhr) {
-                    alert('Terjadi kesalahan: ' + xhr.responseJSON.message);
+                    toastr.error('Terjadi kesalahan: ' + xhr.responseJSON.message);
                 }
             });
         });
     });
 
+    // Toogle form add / edit
     function toggleForm(show) {
         if (show) {
             $('#formCard').slideDown();
@@ -149,6 +182,7 @@
         }
     }
 
+    // Reset form
     function resetForm() {
         $('#appForm')[0].reset();
         $('#app_id').val('');
@@ -156,39 +190,70 @@
         $('input[name="_method"]').val('POST');
     }
 
+    // Get data untuk di update pada form
     function editApp(id) {
-        $.get(`/apps/${id}/edit`, function(data) {
-            $('#app_id').val(data.id);
-            $('#app_code').val(data.app_code);
-            $('#app_name').val(data.app_name);
-            $('#app_group').val(data.app_group);
-            $('#app_url').val(data.app_url);
-            $('#data_status').prop('checked', data.data_status);
+        let url = `{{ route('apps.edit', ':id') }}`;
+        url = url.replace(':id', id);
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function(data) {
+                $('#app_id').val(data.id);
+                $('#app_code').val(data.app_code);
+                $('#app_name').val(data.app_name);
+                $('#app_group').val(data.app_group);
+                $('#app_url').val(data.app_url);
+                $('#data_status').prop('checked', data.data_status);
 
-            $('#formTitle').text('Edit Aplikasi');
-            $('input[name="_method"]').val('PUT');
+                $('#formTitle').text('Edit Aplikasi');
+                $('input[name="_method"]').val('PUT');
 
-            toggleForm(true);
+                toggleForm(true);
+            },
+            error: function(xhr) {
+                toastr.error('Terjadi kesalahan: ' + xhr.responseJSON.message);
+            }
         });
     }
 
+    // Menampiljan modal hapus data
     function deleteApp(id) {
-        if (confirm('Apakah Anda yakin ingin menghapus aplikasi ini?')) {
+        deleteId = id;
+        $('#deleteModal').modal('show');
+    }
+
+    // Hapus data
+    $('#confirmDelete').click(function() {
+        if (deleteId) {
+            let url = `{{ route('apps.destroy', ':id') }}`;
+            url = url.replace(':id', deleteId);
+
             $.ajax({
-                url: `/apps/${id}`,
+                url: url,
                 type: 'DELETE',
                 data: {
                     "_token": "{{ csrf_token() }}"
                 },
                 success: function(response) {
-                    alert('Aplikasi berhasil dihapus');
-                    table.ajax.reload();
+                    if (response.success) {
+                        toastr.success(response.message);
+                        table.ajax.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                    $('#deleteModal').modal('hide');
                 },
                 error: function(xhr) {
-                    alert('Terjadi kesalahan: ' + xhr.responseJSON.message);
+                    toastr.error('Terjadi kesalahan: ' + xhr.responseJSON.message);
+                    $('#deleteModal').modal('hide');
                 }
             });
         }
-    }
+    });
+
+    // Reset deleteId ketika modal ditutup
+    $('#deleteModal').on('hidden.bs.modal', function () {
+        deleteId = null;
+    });
 </script>
 @endpush

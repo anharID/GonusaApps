@@ -13,9 +13,18 @@ class UserAccessController extends Controller
 {
     public function index()
     {
-        $users = User::where('data_status', 1)->get();
-        $apps = App::where('data_status', 1)->get();
-        return view('admin.user-access.index', compact('users', 'apps'));
+        $title = "Manajemen Hak Akses";
+        $users = User::where('data_status', 1)
+            // ->where('id', '!=', 1)
+            ->get();
+
+        // Urutkan apps berdasarkan app_name dan app_group
+        $apps = App::where('data_status', 1)
+            ->orderBy('app_group')
+            ->orderBy('app_name')
+            ->get();
+
+        return view('admin.user-access.index', compact('users', 'apps', 'title'));
     }
 
     public function getData()
@@ -31,7 +40,9 @@ class UserAccessController extends Controller
                 return empty($apps) ? '-' : implode(', ', $apps);
             })
             ->addColumn('action', function ($user) {
-                return $user->id;
+                return '<button onclick="editUserAccess(' . $user->id . ')" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-edit"></i> Ubah Akses
+                                </button>';
             })
             ->rawColumns(['action'])
             ->make(true);
@@ -78,10 +89,7 @@ class UserAccessController extends Controller
             }
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Hak akses berhasil diperbarui'
-        ]);
+        return $this->returnJson(true, 'Hak akses berhasil diperbarui');
     }
 
     public function destroy($id)
@@ -89,9 +97,6 @@ class UserAccessController extends Controller
         $mapping = MapUserApp::findOrFail($id);
         $mapping->update(['data_status' => 0]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Akses berhasil dihapus'
-        ]);
+        return $this->returnJson(true, 'Hak akses berhasil dihapus');
     }
 }

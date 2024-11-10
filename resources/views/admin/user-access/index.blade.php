@@ -4,7 +4,7 @@
 <link href="{{ asset('/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 <style>
     .app-checkbox-container {
-        max-height: 300px;
+        max-height: 400px;
         overflow-y: auto;
         border: 1px solid #e3e6f0;
         padding: 15px;
@@ -12,7 +12,17 @@
     }
 
     .app-checkbox-item {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+    }
+
+    .app-group {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .app-group:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
     }
 </style>
 @endpush
@@ -47,18 +57,35 @@
             <div class="row mt-3">
                 <div class="col-md-12">
                     <label>Pilih Aplikasi yang Dapat Diakses</label>
-                    <div class="app-checkbox-container">
-                        @foreach($apps as $app)
-                        <div class="app-checkbox-item">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" name="app_ids[]"
-                                    value="{{ $app->id }}" id="app{{ $app->id }}">
-                                <label class="custom-control-label" for="app{{ $app->id }}">
-                                    {{ $app->app_name }} ({{ $app->app_group }})
-                                </label>
+                    <div class="border rounded p-3" style="max-height: 500px; overflow-y: auto;">
+                        <div class="row">
+                            @php
+                            $groupedApps = $apps->groupBy('app_group');
+                            @endphp
+
+                            @foreach($groupedApps as $groupName => $apps)
+                            <div class="col-md-4 mb-4">
+                                <div class="h-100">
+                                    <h6 class="font-weight-bold text-primary border-bottom pb-2">
+                                        {{ $groupName }}
+                                    </h6>
+                                    <div class="pl-2">
+                                        @foreach($apps as $app)
+                                        <div class="mb-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" name="app_ids[]"
+                                                    value="{{ $app->id }}" id="app{{ $app->id }}">
+                                                <label class="custom-control-label" for="app{{ $app->id }}">
+                                                    {{ $app->app_name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
+                            @endforeach
                         </div>
-                        @endforeach
                     </div>
                 </div>
             </div>
@@ -98,6 +125,7 @@
 <script src="{{ asset('/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 <script>
     $(document).ready(function() {
+        // Get data access user
         var table = $('#accessTable').DataTable({
             processing: true,
             serverSide: true,
@@ -105,15 +133,7 @@
             columns: [
                 { data: 'user_name', name: 'user_name' },
                 { data: 'app_access', name: 'app_access' },
-                {
-                    data: 'action',
-                    name: 'action',
-                    render: function(data, type, row) {
-                        return `<button onclick="editUserAccess(${row.id})" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-edit"></i> Ubah Akses
-                                </button>`;
-                    }
-                }
+                { data: 'action', name: 'action' },
             ]
         });
 
@@ -130,14 +150,14 @@
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
-                    alert(response.message);
+                    toastr.success(response.message);
                     table.ajax.reload();
                     // Reset form setelah berhasil
                     $('#userSelect').val('').trigger('change');
                     $('input[name="app_ids[]"]').prop('checked', false);
                 },
                 error: function(xhr) {
-                    alert(xhr.responseJSON.message);
+                    toastr.error(xhr.responseJSON.message);
                 }
             });
         });
@@ -145,19 +165,29 @@
 
     // Fungsi untuk load aplikasi user
     function loadUserApps(userId) {
-        if (userId) {
-            // Reset semua checkbox dulu
-            $('input[name="app_ids[]"]').prop('checked', false);
+    if (userId) {
+        // Reset semua checkbox dulu
+        $('input[name="app_ids[]"]').prop('checked', false);
 
-            // Load data akses
-            $.get(`/user-access/${userId}/apps`, function(data) {
+        let url = `{{ route('user-access.get-apps', ':id') }}`;
+        url = url.replace(':id', userId);
+
+        // Load data akses
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function(data) {
                 // Check aplikasi yang sudah diakses
                 data.forEach(function(appId) {
                     $(`#app${appId}`).prop('checked', true);
                 });
-            });
-        }
+            },
+            error: function(xhr) {
+                toastr.error('Terjadi kesalahan: ' + xhr.responseJSON.message);
+            }
+        });
     }
+}
 
     // Fungsi untuk edit akses user
     function editUserAccess(userId) {
