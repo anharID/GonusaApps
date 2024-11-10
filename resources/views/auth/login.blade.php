@@ -24,19 +24,21 @@
 
 <body class="bg-gradient-primary">
 
-    <div class="container">
+    <div class="container h-100 vh-100">
 
         <!-- Outer Row -->
-        <div class="row justify-content-center">
+        <div class="row justify-content-center align-items-center h-100">
 
             <div class="col-xl-10 col-lg-12 col-md-9">
 
-                <div class="card o-hidden border-0 shadow-lg my-5">
+                <div class="card o-hidden border-0 shadow-lg">
                     <div class="card-body p-0">
                         <!-- Nested Row within Card Body -->
                         <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block bg-login-image">
-                                <img src="{{ asset('img/login-img.jpg') }}" class="img-fluid" alt="">
+                            <div class="col-lg-6 d-none d-lg-block bg-login-image"
+                                style="display: flex !important; align-items: center; justify-content: center;">
+                                <img src="{{ asset('img/login-img.jpg') }}" class="img-fluid" alt=""
+                                    style="object-fit: cover; width: 100%; height: 100%;">
                             </div>
 
                             <div class="col-lg-6">
@@ -44,6 +46,17 @@
                                     <div class="text-center">
                                         <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
                                     </div>
+                                    @if($errors->any())
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <ul> @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    @endif
                                     <form class="user" method="POST" action="{{ route('login') }}">
                                         @csrf
                                         <div class="form-group">
