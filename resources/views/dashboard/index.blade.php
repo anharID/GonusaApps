@@ -18,12 +18,12 @@
 
 @section('content')
 <!-- Page Heading -->
-<h1 class="h3 mb-4 text-gray-800">Dashboard</h1>
+<h1 class="h3 mb-4 text-gray-800">Dashboard Aplikasi</h1>
 
 @if($apps->count() > 0)
 @foreach($apps as $groupName => $groupedApps)
 <div class="mb-4">
-    <h4 class="mb-3">{{ $groupName }}</h4>
+    <h4 class="mb-3">{{ $groupName }} ({{ $groupedApps->count() }})</h4>
     <div class="row">
         @foreach($groupedApps as $app)
         <div class="col-xl-3 col-md-4 col-sm-6 mb-4 app-card-wrapper">
