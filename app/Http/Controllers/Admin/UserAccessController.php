@@ -15,7 +15,7 @@ class UserAccessController extends Controller
     {
         $title = "Manajemen Hak Akses";
         $users = User::where('data_status', 1)
-            // ->where('id', '!=', 1)
+            ->where('id', '!=', 1)
             ->get();
 
         // Urutkan apps berdasarkan app_name dan app_group
@@ -29,7 +29,8 @@ class UserAccessController extends Controller
 
     public function getData()
     {
-        $users = User::where('data_status', 1)->get();
+        $users = User::where('id', '!=', 1)
+            ->where('data_status', 1)->get();
 
         return DataTables::of($users)
             ->addColumn('user_name', function ($user) {
