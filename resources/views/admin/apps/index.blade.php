@@ -43,7 +43,7 @@
                             <option value="Finance">Finance</option>
                             <option value="HR">HR</option>
                             <option value="IT">IT</option>
-                            <option value="Operation">Operation</option>
+                            <option value="Operations">Operations</option>
                             <option value="Sales">Sales</option>
                         </select>
                     </div>
