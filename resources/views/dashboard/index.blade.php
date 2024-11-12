@@ -23,7 +23,7 @@
 @if($apps->count() > 0)
 @foreach($apps as $groupName => $groupedApps)
 <div class="mb-4">
-    <h4 class="mb-3">{{ $groupName }} ({{ $groupedApps->count() }})</h4>
+    <h4 class="mb-3">{{ $groupName }}</h4>
     <div class="row">
         @foreach($groupedApps as $app)
         <div class="col-xl-3 col-md-4 col-sm-6 mb-4 app-card-wrapper">
@@ -34,7 +34,7 @@
                             <i class="fas fa-window-maximize fa-3x text-primary"></i>
                         </div>
                         <h5 class="card-title text-dark app-name">{{ $app->app_name }}</h5>
-                        {{-- <p class="card-text small text-muted app-group">{{ $app->app_group }}</p> --}}
+                        <p class="card-text small text-muted app-group">{{ $app->app_group }}</p>
                     </div>
                 </div>
             </a>
